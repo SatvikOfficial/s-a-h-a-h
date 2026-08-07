@@ -51,7 +51,7 @@ export function SiteHeader() {
           href="/reporting"
           className="hidden rounded-md bg-red-600 px-4 py-2 font-serif text-sm font-normal text-white transition-all hover:bg-red-700 sm:inline-block"
         >
-          REPORT INTRUDER
+          विदेशी घुसपैठिये
         </Link>
 
         {/* Mobile toggle */}
@@ -95,7 +95,7 @@ export function SiteHeader() {
               onClick={() => setOpen(false)}
               className="block w-full rounded-md bg-red-600 px-2 py-3 text-center font-serif text-base font-normal text-white transition-all hover:bg-red-700"
             >
-              REPORT INTRUDER
+              विदेशी घुसपैठिये
             </Link>
           </li>
         </ul>

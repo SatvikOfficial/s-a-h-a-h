@@ -1,6 +1,8 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Tiro_Devanagari_Hindi, Mukta } from 'next/font/google'
+import { org } from '@/lib/content'
+import { absoluteUrl } from '@/lib/site'
 import './globals.css'
 
 const tiro = Tiro_Devanagari_Hindi({
@@ -19,6 +21,7 @@ const mukta = Mukta({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(absoluteUrl('/')),
   title: 'S.A.H.A.S. — Sanatan Asmita & Hindu Adhikar Sangathan',
   description:
     'सनातन धर्म, हिंदू अस्मिता, संस्कृति, परंपराओं और गौरव के संरक्षण एवं संवर्धन के लिए समर्पित संगठन। Dedicated to the preservation and promotion of Sanatan Dharma, Hindu identity, culture, and heritage.',
@@ -36,7 +39,25 @@ export const metadata: Metadata = {
     title: 'S.A.H.A.S. — Sanatan Asmita & Hindu Adhikar Sangathan',
     description:
       'सनातन धर्म, हिंदू अस्मिता, संस्कृति, परंपराओं और गौरव के संरक्षण एवं संवर्धन के लिए समर्पित संगठन।',
+    url: absoluteUrl('/'),
+    siteName: 'S.A.H.A.S.',
+    locale: 'hi_IN',
     type: 'website',
+    images: [
+      {
+        url: absoluteUrl(org.logo),
+        width: 512,
+        height: 512,
+        alt: 'S.A.H.A.S. logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'S.A.H.A.S. — Sanatan Asmita & Hindu Adhikar Sangathan',
+    description:
+      'सनातन धर्म, हिंदू अस्मिता, संस्कृति, परंपराओं और गौरव के संरक्षण एवं संवर्धन के लिए समर्पित संगठन।',
+    images: [absoluteUrl(org.logo)],
   },
 }
 

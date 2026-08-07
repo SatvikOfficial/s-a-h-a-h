@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { org } from '@/lib/content'
+import { SocialLinks } from '@/components/social-icons'
 
 const footerLinks = [
   { label: 'हमारा परिचय', href: '/#about' },
@@ -70,6 +71,8 @@ export function SiteFooter() {
           ))}
         </nav>
       </div>
+
+      <SocialLinks className="pb-10" iconClassName="text-primary-foreground/80 ring-primary-foreground/20 hover:text-primary-foreground hover:bg-primary-foreground/10" />
 
       <div className="border-t border-primary-foreground/15">
         <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-primary-foreground/60 sm:px-6">

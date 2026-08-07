@@ -1,6 +1,7 @@
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
-import { org, social } from '@/lib/content'
+import { org } from '@/lib/content'
+import { SocialLinks } from '@/components/social-icons'
 
 export function ContactSection() {
   return (
@@ -31,21 +32,7 @@ export function ContactSection() {
           </ContactItem>
         </ul>
 
-        {/* Social icons stay hidden until real links exist */}
-        {social.length > 0 ? (
-          <div className="mt-8 flex justify-center gap-4">
-            {social.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                className="text-primary hover:text-accent"
-                aria-label={s.label}
-              >
-                {s.label}
-              </a>
-            ))}
-          </div>
-        ) : null}
+        <SocialLinks className="mt-10" />
       </div>
     </section>
   )

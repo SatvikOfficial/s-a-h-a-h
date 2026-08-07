@@ -14,8 +14,8 @@ export const org = {
   intro:
     'S.A.H.A.S. सनातन धर्म के जागरण, हिंदू समाज की एकता और धर्म के सम्मान की रक्षा के लिए समर्पित एक धार्मिक संगठन है।',
   contact: {
-    email: 'sampark@sahas.org',
-    mobile: '+91 00000 00000',
+    email: 'sahas.sampark@gmail.com',
+    mobile: '+91 93359 09050',
     address: 'कार्यालय का पता शीघ्र जोड़ा जाएगा',
   },
 }
@@ -215,5 +215,12 @@ export const sanhita = {
   ],
 }
 
-/** Placeholders — hidden until real links are provided */
-export const social: { label: string; href: string; icon: string }[] = []
+/** Social profiles — TODO: replace the placeholder URLs with the real handles before launch */
+export const social: { label: string; href: string; icon: string }[] = [
+  { label: 'Email', href: 'mailto:sahas.sampark@gmail.com', icon: 'mail' },
+  { label: 'WhatsApp', href: 'https://wa.me/919335909050', icon: 'whatsapp' },
+  { label: 'Instagram', href: 'https://instagram.com/sahasmovement', icon: 'instagram' },
+  { label: 'Facebook', href: 'https://facebook.com/sahasmovement', icon: 'facebook' },
+  { label: 'X (Twitter)', href: 'https://x.com/sahasmovement', icon: 'x' },
+  { label: 'YouTube', href: 'https://youtube.com/@sahasmovement', icon: 'youtube' },
+]

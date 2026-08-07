@@ -15,6 +15,9 @@ interface ReportFormProps {
 
 type Step = 'form' | 'review'
 
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
 export function ReportForm({ language, member, onSuccess, onCancel }: ReportFormProps) {
   const [step, setStep] = useState<Step>('form')
   const [incidentType, setIncidentType] = useState('')
@@ -47,29 +50,50 @@ export function ReportForm({ language, member, onSuccess, onCancel }: ReportForm
     }
 
     const file = e.target.files?.[0]
-    if (file) {
-      setUploadingPhoto(true)
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${member.id}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+    e.target.value = ''
+    if (!file) return
 
-      const { data, error } = await supabase.storage
-        .from('report-photos')
-        .upload(fileName, file)
-
-      if (error) {
-        console.error('Upload error:', error)
-        setErrors({ photos: language === 'hi' ? 'फ़ोटो अपलोड करने में त्रुटि' : 'Error uploading photo' })
-      } else {
-        const { data: urlData } = supabase.storage.from('report-photos').getPublicUrl(fileName)
-        setPhotos([...photos, urlData.publicUrl])
-        setErrors((prev) => {
-          const newErrors = { ...prev }
-          delete newErrors.photos
-          return newErrors
-        })
-      }
-      setUploadingPhoto(false)
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setErrors({
+        photos:
+          language === 'hi'
+            ? 'केवल JPG, PNG या WebP फ़ोटो अपलोड करें'
+            : 'Only JPG, PNG or WebP images are allowed',
+      })
+      return
     }
+
+    if (file.size > MAX_PHOTO_SIZE) {
+      setErrors({
+        photos:
+          language === 'hi'
+            ? 'फ़ोटो 5MB से अधिक नहीं होनी चाहिए'
+            : 'Photo must be 5MB or smaller',
+      })
+      return
+    }
+
+    setUploadingPhoto(true)
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${member.id}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+
+    const { data, error } = await supabase.storage
+      .from('report-photos')
+      .upload(fileName, file)
+
+    if (error) {
+      console.error('Upload error:', error)
+      setErrors({ photos: language === 'hi' ? 'फ़ोटो अपलोड करने में त्रुटि' : 'Error uploading photo' })
+    } else {
+      const { data: urlData } = supabase.storage.from('report-photos').getPublicUrl(fileName)
+      setPhotos([...photos, urlData.publicUrl])
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors.photos
+        return newErrors
+      })
+    }
+    setUploadingPhoto(false)
   }
 
   const handleRemovePhoto = (index: number) => {

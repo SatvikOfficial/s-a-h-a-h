@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { nav, org } from '@/lib/content'
+import { PointingHand } from '@/components/pointing-hand'
 import { cn } from '@/lib/utils'
 
 export function SiteHeader() {
@@ -12,7 +13,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-gold/30 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
         {/* Brand */}
         <Link href="/#home" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <Image
@@ -33,26 +34,19 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="मुख्य नेविगेशन">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-3 py-2 font-serif text-[15px] text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Report button */}
-        <Link
-          href="/reporting"
-          className="inline-block shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all hover:bg-red-700 sm:px-4 sm:py-2 sm:text-sm"
-        >
-          विदेशी घुसपैठिये
-        </Link>
+        {/* Reporting CTA — hand + text pointing right at the red button */}
+        <div className="order-last flex w-full items-center justify-center gap-x-2.5 sm:gap-x-3 lg:order-none lg:w-auto lg:justify-end">
+          <span className="font-serif text-[11px] leading-tight text-red-700 sm:text-sm">
+            विदेशी घुसपैठियों को यहाँ रिपोट करें
+          </span>
+          <PointingHand className="size-4 shrink-0 animate-point-bob text-red-600 sm:size-6" />
+          <Link
+            href="/reporting"
+            className="shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all hover:bg-red-700 sm:px-4 sm:py-2 sm:text-sm"
+          >
+            विदेशी घुसपैठिये
+          </Link>
+        </div>
 
         {/* Mobile toggle */}
         <button
@@ -66,6 +60,21 @@ export function SiteHeader() {
           {open ? <X className="size-6" /> : <Menu className="size-6" />}
         </button>
       </div>
+
+      {/* Desktop nav row */}
+      <nav className="hidden border-t border-gold/20 lg:block" aria-label="मुख्य नेविगेशन">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-6 py-2">
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-md px-3 py-2 font-serif text-[15px] text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       {/* Mobile menu */}
       <nav
@@ -89,15 +98,6 @@ export function SiteHeader() {
               </Link>
             </li>
           ))}
-          <li className="border-t border-gold/20 py-2">
-            <Link
-              href="/reporting"
-              onClick={() => setOpen(false)}
-              className="block w-full rounded-md bg-red-600 px-2 py-3 text-center font-serif text-base font-normal text-white transition-all hover:bg-red-700"
-            >
-              विदेशी घुसपैठिये
-            </Link>
-          </li>
         </ul>
       </nav>
     </header>

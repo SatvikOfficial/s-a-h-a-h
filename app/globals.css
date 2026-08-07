@@ -83,3 +83,18 @@
     radial-gradient(oklch(0.62 0.09 76 / 0.06) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+/* Pointing hand gesturing right, toward the reporting button in the navbar */
+@keyframes point-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(90deg);
+  }
+}
+
+.animate-point-bob {
+  animation: point-bob 1.4s ease-in-out infinite;
+}

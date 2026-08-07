@@ -49,7 +49,7 @@ export function SiteHeader() {
         {/* Report button */}
         <Link
           href="/reporting"
-          className="hidden rounded-md bg-red-600 px-4 py-2 font-serif text-sm font-normal text-white transition-all hover:bg-red-700 sm:inline-block"
+          className="inline-block shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all hover:bg-red-700 sm:px-4 sm:py-2 sm:text-sm"
         >
           विदेशी घुसपैठिये
         </Link>

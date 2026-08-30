@@ -4,6 +4,21 @@
 -- admins can manage everything.
 
 -- ============================================================
+-- Trigger helper: keeps updated_at current on row changes.
+-- (Defined in 001_init.sql too, but redefining here makes this
+--  migration self-contained so it runs on any project.)
+-- ============================================================
+create or replace function public.update_modified_column()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- ============================================================
 -- Add phone number to members (admin dashboard shows it)
 -- ============================================================
 alter table public.members add column if not exists phone text;

@@ -20,6 +20,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [state, setState] = useState('')
@@ -41,6 +42,8 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
     if (!lastName.trim()) newErrors.lastName = t.errors.required
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = language === 'hi' ? 'वैध ईमेल दर्ज करें' : 'Enter a valid email'
+    if (!phone.trim() || !/^[0-9+\-\s]{7,15}$/.test(phone.trim()))
+      newErrors.phone = language === 'hi' ? 'वैध फोन नंबर दर्ज करें' : 'Enter a valid phone number'
     if (password.length < 6)
       newErrors.password = language === 'hi' ? 'कम से कम 6 अक्षर' : 'At least 6 characters'
     if (password !== confirmPassword)
@@ -100,6 +103,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         email: email.trim().toLowerCase(),
+        phone: phone.trim(),
         state,
         district,
         city: city.trim(),
@@ -117,7 +121,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
 
     const member: Member = {
       id: memberRow.id,
-      phoneNumber: '',
+      phoneNumber: memberRow.phone ?? memberRow.phoneNumber ?? '',
       firstName: memberRow.first_name,
       lastName: memberRow.last_name,
       state: memberRow.state,
@@ -180,6 +184,21 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
             autoComplete="email"
           />
           {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">
+            {language === 'hi' ? 'फोन नंबर' : 'Phone Number'}
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
+            placeholder="+91 90000 00000"
+            autoComplete="tel"
+          />
+          {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

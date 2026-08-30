@@ -38,7 +38,7 @@ export default function ReportingPage() {
         if (memberRow) {
           const member: Member = {
             id: memberRow.id,
-            phoneNumber: '',
+            phoneNumber: memberRow.phone ?? memberRow.phoneNumber ?? '',
             firstName: memberRow.first_name,
             lastName: memberRow.last_name,
             state: memberRow.state,

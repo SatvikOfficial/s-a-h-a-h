@@ -42,7 +42,7 @@ export function SiteHeader() {
           <PointingHand className="size-4 shrink-0 animate-point-bob text-red-600 sm:size-6" />
           <Link
             href="/reporting"
-            className="shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all hover:bg-red-700 sm:px-4 sm:py-2 sm:text-sm"
+            className="shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md active:translate-y-0 active:scale-[0.97] sm:px-4 sm:py-2 sm:text-sm"
           >
             विदेशी घुसपैठिये
           </Link>
@@ -68,7 +68,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-3 py-2 font-serif text-[15px] text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
+              className="link-sweep rounded-md px-3 py-2 font-serif text-[15px] text-foreground/80 transition-all duration-200 hover:bg-secondary hover:text-primary active:scale-95"
             >
               {item.label}
             </Link>
@@ -92,7 +92,7 @@ export function SiteHeader() {
               <Link
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="block rounded-md px-2 py-3 font-serif text-base text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
+                className="link-sweep block rounded-md px-2 py-3 font-serif text-base text-foreground/80 transition-all duration-200 hover:bg-secondary hover:text-primary active:scale-95"
               >
                 {item.label}
               </Link>

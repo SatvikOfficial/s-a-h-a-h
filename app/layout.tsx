@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Tiro_Devanagari_Hindi, Mukta } from 'next/font/google'
 import { org } from '@/lib/content'
 import { absoluteUrl } from '@/lib/site'
+import { CursorGlow } from '@/components/cursor-glow'
 import './globals.css'
 
 const tiro = Tiro_Devanagari_Hindi({
@@ -74,6 +75,7 @@ export default function RootLayout({
   return (
     <html lang="hi" className={`${tiro.variable} ${mukta.variable} bg-background`}>
       <body className="font-sans antialiased">
+        <CursorGlow />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

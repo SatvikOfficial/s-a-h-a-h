@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { Search, Loader2, RefreshCw } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
+import { MembersTab } from '@/components/admin/members-tab'
+import { BlogTab } from '@/components/admin/blog-tab'
 import { supabase } from '@/lib/supabase'
 
 type ReportStatus = 'new' | 'reviewing' | 'acknowledged' | 'resolved'
@@ -23,6 +25,8 @@ interface Report {
   members?: { member_code: string; email: string } | null
 }
 
+type Tab = 'reports' | 'members' | 'blog'
+
 export default function AdminDashboard() {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,6 +37,7 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<Tab>('reports')
 
   const fetchReports = useCallback(async () => {
     setLoading(true)
@@ -224,6 +229,34 @@ export default function AdminDashboard() {
             <div className="mb-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
 
+          {/* Tabs */}
+          <div className="mb-8 flex flex-wrap gap-2 border-b border-gold/20 pb-4">
+            {(
+              [
+                ['reports', 'रिपोर्ट्स'],
+                ['members', 'सदस्य'],
+                ['blog', 'ब्लॉग'],
+              ] as [Tab, string][]
+            ).map(([tab, label]) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`rounded-md px-4 py-2 font-serif text-sm transition-colors ${
+                  activeTab === tab
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-primary/30 text-primary hover:bg-secondary'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'members' && <MembersTab />}
+          {activeTab === 'blog' && <BlogTab />}
+
+          {activeTab === 'reports' && (
+          <>
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Reports List */}
             <div className="lg:col-span-2">
@@ -426,6 +459,8 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
       </main>
       <SiteFooter />

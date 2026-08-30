@@ -50,7 +50,7 @@ export function SiteFooter() {
             <Link
               key={l.href}
               href={l.href}
-              className="font-serif text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              className="link-sweep font-serif text-sm text-primary-foreground/80 transition-all duration-200 hover:translate-x-0.5 hover:text-primary-foreground active:scale-95"
             >
               {l.label}
             </Link>
@@ -64,7 +64,7 @@ export function SiteFooter() {
             <Link
               key={l.href}
               href={l.href}
-              className="font-serif text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              className="link-sweep font-serif text-sm text-primary-foreground/80 transition-all duration-200 hover:translate-x-0.5 hover:text-primary-foreground active:scale-95"
             >
               {l.label}
             </Link>

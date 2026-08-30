@@ -1,5 +1,8 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import { social } from '@/lib/content'
+import { motion } from 'framer-motion'
 
 const paths: Record<string, string> = {
   mail: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
@@ -39,20 +42,27 @@ export function SocialLinks({
   if (social.length === 0) return null
   return (
     <div className={cn('flex justify-center gap-4', className)}>
-      {social.map((s) => (
-        <a
+      {social.map((s, i) => (
+        <motion.a
           key={s.icon}
           href={s.href}
           target="_blank"
           rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-30px' }}
+          transition={{ duration: 0.4, delay: i * 0.05, ease: 'easeOut' }}
+          whileHover={{ y: -3, scale: 1.08 }}
+          whileTap={{ scale: 0.88 }}
           className={cn(
             'inline-flex size-10 items-center justify-center rounded-full ring-1 ring-gold/40 transition-colors hover:bg-primary/10',
             iconClassName,
           )}
           aria-label={s.label}
+          title={s.label}
         >
-          <SocialIcon name={s.icon} />
-        </a>
+          <SocialIcon name={s.icon} className="transition-transform duration-200 group-hover:scale-110" />
+        </motion.a>
       ))}
     </div>
   )

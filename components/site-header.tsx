@@ -6,12 +6,14 @@ import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { nav, org } from '@/lib/content'
 import { PointingHand } from '@/components/pointing-hand'
+import { TributeBar } from '@/components/tribute-bar'
 import { cn } from '@/lib/utils'
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-gold/30 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
         {/* Brand */}
@@ -32,6 +34,18 @@ export function SiteHeader() {
               {org.fullName}
             </span>
           </span>
+        </Link>
+
+        {/* Hindu Panchang shortcut */}
+        <Link
+          href="/#festivals"
+          onClick={() => setOpen(false)}
+          className="inline-flex items-center gap-1.5 rounded-md border border-gold/30 bg-secondary/60 px-3 py-1.5 font-serif text-xs font-medium text-primary transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary hover:shadow-md active:scale-[0.97] sm:text-sm"
+          aria-label="हिंदू पंचांग / त्योहार कैलेंडर"
+        >
+          <span aria-hidden="true">📅</span>
+          <span className="hidden sm:inline">हिंदू पंचांग</span>
+          <span className="inline sm:hidden">पंचांग</span>
         </Link>
 
         {/* Reporting CTA — hand + text pointing right at the red button */}
@@ -101,5 +115,7 @@ export function SiteHeader() {
         </ul>
       </nav>
     </header>
+    <TributeBar />
+    </>
   )
 }

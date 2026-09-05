@@ -17,16 +17,24 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      {/* main is a flex column so we can reorder sections responsively */}
+      <main className="flex flex-col">
         <Hero />
-        <GitaSection />
+        <div className="contents lg:contents">
+          <GitaSection />
+          <div className="contents lg:hidden">
+            <YouTubeSection />
+          </div>
+        </div>
         <RevolutionSection />
         <FlowSection />
         <AboutSection />
         <MissionSection />
         <ActivitiesSection />
         <Tributes />
-        <YouTubeSection />
+        <div className="hidden lg:contents">
+          <YouTubeSection />
+        </div>
         <FestivalsCalendar language="hi" />
         <JoinSection />
         <ContactSection />

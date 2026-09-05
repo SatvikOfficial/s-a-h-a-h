@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { strings } from '@/lib/strings'
 import type { Language, Member } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
@@ -12,54 +12,73 @@ interface QuickAuthProps {
   onCancel: () => void
 }
 
+type Step = 'phone' | 'otp'
+
 export function QuickAuth({ language, onSuccess, onCancel }: QuickAuthProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [step, setStep] = useState<Step>('phone')
+  const [phone, setPhone] = useState('')
+  const [otp, setOtp] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
   const t = strings[language].reporting
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
 
-    if (!email.trim()) {
-      setErrors({ email: language === 'hi' ? 'ईमेल दर्ज करें' : 'Enter email' })
-      return
-    }
-    if (!password) {
-      setErrors({ password: language === 'hi' ? 'पासवर्ड दर्ज करें' : 'Enter password' })
+    if (!phone.trim() || !/^[0-9+\-\s]{7,15}$/.test(phone.trim())) {
+      setErrors({ phone: t.errors.invalidPhone })
       return
     }
 
     setLoading(true)
 
-    // 1. Sign in
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phone.trim(),
+      options: { shouldCreateUser: false },
+    })
+
+    setLoading(false)
+
+    if (error) {
+      setErrors({ phone: error.message })
+      return
+    }
+
+    setStep('otp')
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!otp.trim()) {
+      setErrors({ otp: t.errors.invalidOtp })
+      return
+    }
+
+    setLoading(true)
+
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+      phone: phone.trim(),
+      token: otp.trim(),
+      type: 'sms',
     })
 
     if (authError) {
       setLoading(false)
-      setErrors({
-        form:
-          language === 'hi'
-            ? 'ईमेल या पासवर्ड गलत है। कृपया पुनः प्रयास करें।'
-            : 'Invalid email or password. Please try again.',
-      })
+      setErrors({ otp: authError.message })
       return
     }
 
     const userId = authData.user?.id
     if (!userId) {
       setLoading(false)
-      setErrors({ form: 'Login failed. Please try again.' })
+      setErrors({ otp: 'Login failed. Please try again.' })
       return
     }
 
-    // 2. Fetch member profile
+    // Fetch member profile
     const { data: memberRow, error: memberError } = await supabase
       .from('members')
       .select('*')
@@ -70,7 +89,7 @@ export function QuickAuth({ language, onSuccess, onCancel }: QuickAuthProps) {
 
     if (memberError || !memberRow) {
       setErrors({
-        form:
+        otp:
           language === 'hi'
             ? 'सदस्य प्रोफ़ाइल नहीं मिली। कृपया नए सदस्य के रूप में पंजीकरण करें।'
             : 'Member profile not found. Please register as a new member.',
@@ -94,57 +113,117 @@ export function QuickAuth({ language, onSuccess, onCancel }: QuickAuthProps) {
     onSuccess(member)
   }
 
+  const handleResend = async () => {
+    setOtp('')
+    setErrors({})
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phone.trim(),
+      options: { shouldCreateUser: false },
+    })
+    setLoading(false)
+    if (error) setErrors({ phone: error.message })
+  }
+
+  if (step === 'phone') {
+    return (
+      <form onSubmit={handleSendOtp} className="space-y-6">
+        <h3 className="font-serif text-2xl font-normal text-primary">{t.quickAuth.heading}</h3>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">
+            {t.quickAuth.phoneNumber}
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value)
+              setErrors({})
+            }}
+            className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
+            placeholder="+91 90000 00000"
+            autoComplete="tel"
+          />
+          {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+        </div>
+
+        {errors.form && (
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{errors.form}</p>
+        )}
+
+        <div className="flex gap-3 pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-md border border-primary/30 px-4 py-2 font-serif text-foreground transition-colors hover:bg-secondary"
+          >
+            {t.buttons.cancel}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 font-serif text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                {language === 'hi' ? 'OTP भेजा जा रहा है…' : 'Sending OTP…'}
+              </>
+            ) : (
+              <>
+                {language === 'hi' ? 'OTP भेजें' : 'Send OTP'}
+                <ChevronRight className="size-4" />
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    )
+  }
+
   return (
-    <form onSubmit={handleLogin} className="space-y-6">
-      <h3 className="font-serif text-2xl font-normal text-primary">{t.quickAuth.heading}</h3>
+    <form onSubmit={handleVerifyOtp} className="space-y-6">
+      <h3 className="font-serif text-2xl font-normal text-primary">
+        {language === 'hi' ? 'OTP सत्यापित करें' : 'Verify OTP'}
+      </h3>
+      <p className="text-sm text-foreground/70">
+        {language === 'hi'
+          ? `हमने ${phone} पर एक बार उपयोग होने वाला OTP भेजा है।`
+          : `We have sent a one-time OTP to ${phone}.`}
+      </p>
 
       <div>
         <label className="block text-sm font-medium text-foreground/90 mb-1">
-          {language === 'hi' ? 'ईमेल' : 'Email'}
+          {t.quickAuth.enterOtp}
         </label>
         <input
-          type="email"
-          value={email}
+          type="text"
+          inputMode="numeric"
+          value={otp}
           onChange={(e) => {
-            setEmail(e.target.value)
+            setOtp(e.target.value.replace(/\D/g, ''))
             setErrors({})
           }}
-          className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-          placeholder="example@email.com"
-          autoComplete="email"
+          className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-center font-serif text-2xl tracking-[0.4em] text-foreground transition-colors focus:border-primary focus:outline-none"
+          placeholder="••••••"
+          maxLength={6}
+          autoComplete="one-time-code"
         />
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+        {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
       </div>
-
-      <div>
-        <label className="block text-sm font-medium text-foreground/90 mb-1">
-          {language === 'hi' ? 'पासवर्ड' : 'Password'}
-        </label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value)
-            setErrors({})
-          }}
-          className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-          placeholder={language === 'hi' ? 'पासवर्ड' : 'Password'}
-          autoComplete="current-password"
-        />
-        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-      </div>
-
-      {errors.form && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{errors.form}</p>
-      )}
 
       <div className="flex gap-3 pt-4">
         <button
           type="button"
-          onClick={onCancel}
-          className="flex-1 rounded-md border border-primary/30 px-4 py-2 font-serif text-foreground transition-colors hover:bg-secondary"
+          onClick={() => setStep('phone')}
+          disabled={loading}
+          className="flex-1 rounded-md border border-primary/30 px-4 py-2 font-serif text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
         >
-          {t.buttons.cancel}
+          <span className="inline-flex items-center gap-2">
+            <ChevronLeft className="size-4" />
+            {language === 'hi' ? 'वापस' : 'Back'}
+          </span>
         </button>
         <button
           type="submit"
@@ -154,16 +233,25 @@ export function QuickAuth({ language, onSuccess, onCancel }: QuickAuthProps) {
           {loading ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              {language === 'hi' ? 'लॉग इन हो रहा है…' : 'Logging in…'}
+              {language === 'hi' ? 'सत्यापित हो रहा है…' : 'Verifying…'}
             </>
           ) : (
             <>
-              {language === 'hi' ? 'लॉग इन करें' : 'Login'}
+              {language === 'hi' ? 'सत्यापित करें' : 'Verify'}
               <ChevronRight className="size-4" />
             </>
           )}
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={handleResend}
+        disabled={loading}
+        className="text-center text-sm text-primary hover:underline disabled:opacity-60"
+      >
+        {language === 'hi' ? 'OTP फिर से भेजें' : 'Resend OTP'}
+      </button>
     </form>
   )
 }

@@ -95,9 +95,8 @@ export function JoinSection() {
               />
               <Field
                 id="mobile"
-                label="मोबाइल नंबर"
+                label="मोबाइल नंबर (वैकल्पिक)"
                 type="tel"
-                required
                 inputMode="numeric"
                 value={form.mobile}
                 onChange={(v) => update('mobile', v)}
@@ -113,8 +112,7 @@ export function JoinSection() {
               />
               <Field
                 id="city"
-                label="शहर"
-                required
+                label="शहर (वैकल्पिक)"
                 value={form.city}
                 onChange={(v) => update('city', v)}
                 autoComplete="address-level2"

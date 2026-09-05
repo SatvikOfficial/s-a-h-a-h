@@ -13,7 +13,7 @@ interface RegistrationFormProps {
   onCancel: () => void
 }
 
-type Step = 'form' | 'confirm_email' | 'success'
+type Step = 'form' | 'otp' | 'success'
 
 export function RegistrationForm({ language, onSuccess, onCancel }: RegistrationFormProps) {
   const [step, setStep] = useState<Step>('form')
@@ -21,11 +21,10 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [state, setState] = useState('')
   const [district, setDistrict] = useState('')
   const [city, setCity] = useState('')
+  const [otp, setOtp] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [createdMember, setCreatedMember] = useState<Member | null>(null)
@@ -39,18 +38,9 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!firstName.trim()) newErrors.firstName = t.errors.required
-    if (!lastName.trim()) newErrors.lastName = t.errors.required
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = language === 'hi' ? 'वैध ईमेल दर्ज करें' : 'Enter a valid email'
+    // Phone is required for OTP verification (reporting requires verification)
     if (!phone.trim() || !/^[0-9+\-\s]{7,15}$/.test(phone.trim()))
-      newErrors.phone = language === 'hi' ? 'वैध फोन नंबर दर्ज करें' : 'Enter a valid phone number'
-    if (password.length < 6)
-      newErrors.password = language === 'hi' ? 'कम से कम 6 अक्षर' : 'At least 6 characters'
-    if (password !== confirmPassword)
-      newErrors.confirmPassword = language === 'hi' ? 'पासवर्ड मेल नहीं खाते' : 'Passwords do not match'
-    if (!state) newErrors.state = t.errors.selectState
-    if (!district) newErrors.district = t.errors.selectDistrict
-    if (!city.trim()) newErrors.city = t.errors.required
+      newErrors.phone = t.errors.invalidPhone
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -62,51 +52,63 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
 
     setLoading(true)
 
-    // 1. Sign up with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: {
-        data: { first_name: firstName, last_name: lastName },
-      },
+    // Send one-time OTP to the phone number for verification
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      phone: phone.trim(),
+      options: { shouldCreateUser: true },
+    })
+
+    setLoading(false)
+
+    if (otpError) {
+      setErrors({ form: otpError.message })
+      return
+    }
+
+    setStep('otp')
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!otp.trim()) {
+      setErrors({ otp: t.errors.invalidOtp })
+      return
+    }
+
+    setLoading(true)
+
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+      phone: phone.trim(),
+      token: otp.trim(),
+      type: 'sms',
     })
 
     if (authError) {
       setLoading(false)
-      if (authError.message.toLowerCase().includes('already registered')) {
-        setErrors({ email: language === 'hi' ? 'यह ईमेल पहले से पंजीकृत है' : 'Email already registered. Please login instead.' })
-      } else {
-        setErrors({ form: authError.message })
-      }
+      setErrors({ otp: authError.message })
       return
     }
 
     const userId = authData.user?.id
     if (!userId) {
       setLoading(false)
-      setErrors({ form: 'Registration failed. Please try again.' })
+      setErrors({ otp: 'Verification failed. Please try again.' })
       return
     }
 
-    // If email confirmation is required, session will be null — show confirm-email step
-    if (!authData.session) {
-      setLoading(false)
-      setStep('confirm_email')
-      return
-    }
-
-    // 2. Insert member profile row
+    // Insert member profile row (optional fields default to empty)
     const { data: memberRow, error: memberError } = await supabase
       .from('members')
       .insert({
         user_id: userId,
         first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim().toLowerCase(),
+        last_name: lastName.trim() || null,
+        email: email.trim().toLowerCase() || null,
         phone: phone.trim(),
-        state,
-        district,
-        city: city.trim(),
+        state: state || null,
+        district: district || null,
+        city: city.trim() || null,
       })
       .select()
       .single()
@@ -115,7 +117,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
 
     if (memberError) {
       console.error('Member insert error:', memberError)
-      setErrors({ form: language === 'hi' ? 'प्रोफ़ाइल सहेजने में त्रुटि' : 'Error saving profile' })
+      setErrors({ otp: language === 'hi' ? 'प्रोफ़ाइल सहेजने में त्रुटि' : 'Error saving profile' })
       return
     }
 
@@ -137,10 +139,28 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
     onSuccess(member)
   }
 
+  const handleResend = async () => {
+    setOtp('')
+    setErrors({})
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phone.trim(),
+      options: { shouldCreateUser: true },
+    })
+    setLoading(false)
+    if (error) setErrors({ otp: error.message })
+  }
+
   if (step === 'form') {
     return (
       <form onSubmit={handleSubmitForm} className="space-y-6">
         <h3 className="font-serif text-2xl font-normal text-primary">{t.registration.heading}</h3>
+
+        <p className="text-sm text-foreground/70">
+          {language === 'hi'
+            ? 'ईमेल, फोन और स्थान की जानकारी वैकल्पिक है। घुसपैठिया रिपोर्ट करने के लिए OTP सत्यापन आवश्यक है।'
+            : 'Email, phone and location are optional. OTP verification is required to report an intruder.'}
+        </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -165,7 +185,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-              placeholder={language === 'hi' ? 'अंतिम नाम' : 'Last name'}
+              placeholder={language === 'hi' ? 'अंतिम नाम (वैकल्पिक)' : 'Last name (optional)'}
             />
             {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
           </div>
@@ -173,22 +193,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
 
         <div>
           <label className="block text-sm font-medium text-foreground/90 mb-1">
-            {language === 'hi' ? 'ईमेल' : 'Email'}
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-            placeholder="example@email.com"
-            autoComplete="email"
-          />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-foreground/90 mb-1">
-            {language === 'hi' ? 'फोन नंबर' : 'Phone Number'}
+            {language === 'hi' ? 'फोन नंबर (आवश्यक)' : 'Phone Number (required)'}
           </label>
           <input
             type="tel"
@@ -201,37 +206,19 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
           {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-foreground/90 mb-1">
-              {language === 'hi' ? 'पासवर्ड' : 'Password'}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-              placeholder={language === 'hi' ? 'न्यूनतम 6 अक्षर' : 'Min. 6 characters'}
-              autoComplete="new-password"
-            />
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground/90 mb-1">
-              {language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm Password'}
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
-              placeholder={language === 'hi' ? 'पुनः दर्ज करें' : 'Re-enter'}
-              autoComplete="new-password"
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-            )}
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">
+            {language === 'hi' ? 'ईमेल (वैकल्पिक)' : 'Email (optional)'}
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-foreground transition-colors focus:border-primary focus:outline-none"
+            placeholder="example@email.com"
+            autoComplete="email"
+          />
+          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -317,11 +304,11 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
             {loading ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                {language === 'hi' ? 'पंजीकरण हो रहा है…' : 'Registering…'}
+                {language === 'hi' ? 'OTP भेजा जा रहा है…' : 'Sending OTP…'}
               </>
             ) : (
               <>
-                {language === 'hi' ? 'पंजीकरण करें' : 'Register'}
+                {language === 'hi' ? 'OTP भेजें' : 'Send OTP'}
                 <ChevronRight className="size-4" />
               </>
             )}
@@ -331,45 +318,78 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
     )
   }
 
-  // confirm_email state
-  if (step === 'confirm_email') {
+  if (step === 'otp') {
     return (
-      <div className="space-y-6 text-center">
-        <div className="flex justify-center">
-          <div className="rounded-full bg-primary/10 p-4">
-            <svg
-              className="size-12 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        </div>
+      <form onSubmit={handleVerifyOtp} className="space-y-6">
+        <h3 className="font-serif text-2xl font-normal text-primary">
+          {language === 'hi' ? 'OTP सत्यापित करें' : 'Verify OTP'}
+        </h3>
+        <p className="text-sm text-foreground/70">
+          {language === 'hi'
+            ? `हमने ${phone} पर एक बार उपयोग होने वाला OTP भेजा है।`
+            : `We have sent a one-time OTP to ${phone}.`}
+        </p>
+
         <div>
-          <h3 className="font-serif text-2xl font-normal text-primary">
-            {language === 'hi' ? 'ईमेल की पुष्टि करें' : 'Confirm Your Email'}
-          </h3>
-          <p className="mt-4 text-sm text-foreground/70">
-            {language === 'hi'
-              ? 'हमने आपके ईमेल पते पर एक पुष्टिकरण लिंक भेजा है। कृपया अपना इनबॉक्स जांचें और लिंक पर क्लिक करें।'
-              : 'We have sent a confirmation link to your email address. Please check your inbox and click the link.'}
-          </p>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">
+            {language === 'hi' ? 'OTP दर्ज करें' : 'Enter OTP'}
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={otp}
+            onChange={(e) => {
+              setOtp(e.target.value.replace(/\D/g, ''))
+              setErrors({})
+            }}
+            className="w-full rounded-md border border-gold/30 bg-background px-3 py-2 text-center font-serif text-2xl tracking-[0.4em] text-foreground transition-colors focus:border-primary focus:outline-none"
+            placeholder="••••••"
+            maxLength={6}
+            autoComplete="one-time-code"
+          />
+          {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
         </div>
+
+        <div className="flex gap-3 pt-4">
+          <button
+            type="button"
+            onClick={() => setStep('form')}
+            disabled={loading}
+            className="flex-1 rounded-md border border-primary/30 px-4 py-2 font-serif text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+          >
+            <span className="inline-flex items-center gap-2">
+              <ChevronLeft className="size-4" />
+              {language === 'hi' ? 'वापस' : 'Back'}
+            </span>
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 font-serif text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-70"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                {language === 'hi' ? 'सत्यापित हो रहा है…' : 'Verifying…'}
+              </>
+            ) : (
+              <>
+                {language === 'hi' ? 'सत्यापित करें' : 'Verify'}
+                <ChevronRight className="size-4" />
+              </>
+            )}
+          </button>
+        </div>
+
         <button
-          onClick={onCancel}
-          className="w-full rounded-md border border-primary/30 px-4 py-2 font-serif text-foreground transition-colors hover:bg-secondary"
+          type="button"
+          onClick={handleResend}
+          disabled={loading}
+          className="text-center text-sm text-primary hover:underline disabled:opacity-60"
         >
-          {language === 'hi' ? 'लॉग इन पर वापस जाएं' : 'Back to Login'}
+          {language === 'hi' ? 'OTP फिर से भेजें' : 'Resend OTP'}
         </button>
-      </div>
+      </form>
     )
   }
 

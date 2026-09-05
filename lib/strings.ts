@@ -171,9 +171,13 @@ export const strings = {
 
 export function getString(language: Language, path: string): string {
   const parts = path.split('.')
-  let current: any = strings[language]
+  let current: unknown = strings[language]
   for (const part of parts) {
-    current = current?.[part]
+    if (current && typeof current === 'object') {
+      current = (current as Record<string, unknown>)[part]
+    } else {
+      break
+    }
   }
-  return current || path
+  return current && typeof current === 'string' ? current : path
 }

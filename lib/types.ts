@@ -14,6 +14,36 @@ export interface Member {
   createdAt: Date
 }
 
+// Raw `members` table row as returned by Supabase (snake_case columns).
+export interface MemberRow {
+  id: string
+  phone?: string | null
+  phoneNumber?: string | null
+  first_name?: string | null
+  last_name?: string | null
+  state?: string | null
+  district?: string | null
+  city?: string | null
+  member_code?: string | null
+  email?: string | null
+  created_at?: string | null
+}
+
+export function toMember(row: MemberRow): Member {
+  return {
+    id: row.id,
+    phoneNumber: row.phone ?? row.phoneNumber ?? '',
+    firstName: row.first_name ?? '',
+    lastName: row.last_name ?? '',
+    state: row.state ?? '',
+    district: row.district ?? '',
+    city: row.city ?? '',
+    memberCode: row.member_code ?? undefined,
+    email: row.email ?? undefined,
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+  }
+}
+
 export interface Report {
   id: string
   memberId: string

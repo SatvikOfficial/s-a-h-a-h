@@ -2,10 +2,9 @@ import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { SectionHeading } from '@/components/section-heading'
-import { org } from '@/lib/content'
 
 export const metadata: Metadata = {
-  title: `Terms / Disclaimer — ${org.shortName}`,
+  title: 'Terms / Disclaimer',
   description: 'नियम एवं अस्वीकरण — S.A.H.A.S.',
 }
 

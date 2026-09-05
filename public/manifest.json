@@ -1,0 +1,37 @@
+{
+  "name": "S.A.H.A.S. — Sanatan Asmita & Hindu Adhikar Sangathan",
+  "short_name": "S.A.H.A.S.",
+  "description": "सनातन धर्म, हिंदू अस्मिता, संस्कृति, परंपराओं और गौरव के संरक्षण एवं संवर्धन के लिए समर्पित संगठन।",
+  "lang": "hi",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F0EAD8",
+  "theme_color": "#7a1f27",
+  "categories": ["social", "news", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-light-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/sahas-logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/sahas-logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ export default function Error({
           <div className="mt-6 flex flex-col gap-3">
             <button
               onClick={reset}
+              aria-label="पुनः प्रयास करें"
               className="w-full rounded-md bg-primary px-4 py-2 font-serif text-primary-foreground transition-all hover:bg-primary/90"
             >
               पुनः प्रयास करें

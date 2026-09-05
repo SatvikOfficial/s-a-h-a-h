@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { strings } from '@/lib/strings'
 import { indianLocations, indianLocationsEn } from '@/lib/locations'
 import type { Language, Member } from '@/lib/types'
+import { toMember } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 
 interface RegistrationFormProps {
@@ -121,18 +122,7 @@ export function RegistrationForm({ language, onSuccess, onCancel }: Registration
       return
     }
 
-    const member: Member = {
-      id: memberRow.id,
-      phoneNumber: memberRow.phone ?? memberRow.phoneNumber ?? '',
-      firstName: memberRow.first_name,
-      lastName: memberRow.last_name,
-      state: memberRow.state,
-      district: memberRow.district,
-      city: memberRow.city,
-      memberCode: memberRow.member_code,
-      email: memberRow.email,
-      createdAt: new Date(memberRow.created_at),
-    }
+    const member = toMember(memberRow)
 
     setCreatedMember(member)
     setStep('success')

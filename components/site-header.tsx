@@ -56,6 +56,7 @@ export function SiteHeader() {
           <PointingHand className="size-4 shrink-0 animate-point-bob text-red-600 sm:size-6" />
           <Link
             href="/reporting"
+            aria-label="विदेशी घुसपैठिये — रिपोर्ट पृष्ठ पर जाएं"
             className="shrink-0 rounded-md bg-red-600 px-3 py-1.5 font-serif text-xs font-normal text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md active:translate-y-0 active:scale-[0.97] sm:px-4 sm:py-2 sm:text-sm"
           >
             विदेशी घुसपैठिये

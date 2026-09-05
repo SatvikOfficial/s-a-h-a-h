@@ -11,12 +11,14 @@ const tributes = [
     alt: 'छत्रपति शिवाजी महाराज',
     name: 'छत्रपति शिवाजी महाराज',
     text: 'स्वराज्य के स्थापक। धर्म, मर्यादा और हिंदवी स्वराज्य के प्रतीक।',
+    mirror: true,
   },
   {
     image: '/ambedgar.webp',
     alt: 'डॉ. भीमराव अंबेडकर',
     name: 'डॉ. भीमराव अंबेडकर',
     text: 'भारतीय संविधान के निर्माता। समानता और सामाजिक न्याय के पुरोधा।',
+    mirror: false,
   },
 ]
 
@@ -43,7 +45,7 @@ export function Tributes() {
                     alt={t.alt}
                     width={128}
                     height={128}
-                    className="size-full object-cover transition-transform duration-500 hover:scale-110"
+                    className={`size-full object-cover object-top transition-transform duration-500 ${t.mirror ? '-scale-x-100 hover:-scale-x-110' : 'hover:scale-110'}`}
                   />
                 </div>
                 <h3 className="mt-4 font-serif text-xl text-primary">{t.name}</h3>

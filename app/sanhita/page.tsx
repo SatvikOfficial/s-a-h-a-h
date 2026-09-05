@@ -5,12 +5,34 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { SectionHeading } from '@/components/section-heading'
 import { buttonVariants } from '@/components/ui/button'
-import { sanhita, org } from '@/lib/content'
+import { sanhita } from '@/lib/content'
+import { org } from '@/lib/content'
+import { absoluteUrl } from '@/lib/site'
 import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
-  title: `हमारी संहिता — ${org.shortName}`,
+  title: 'हमारी संहिता',
   description: sanhita.intro,
+  openGraph: {
+    title: 'हमारी संहिता',
+    description: sanhita.intro,
+    url: absoluteUrl('/sanhita'),
+    siteName: 'S.A.H.A.S.',
+    locale: 'hi_IN',
+    type: 'website',
+    images: [
+      {
+        url: absoluteUrl(org.logo),
+        width: 512,
+        height: 512,
+        alt: 'S.A.H.A.S. logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [absoluteUrl(org.logo)],
+  },
 }
 
 export default function SanhitaPage() {

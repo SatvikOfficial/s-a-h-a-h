@@ -163,7 +163,7 @@ export function ReportForm({ language, member, onSuccess, onCancel }: ReportForm
       id: insertedRow.id,
       memberId: member.id,
       reporterName: insertedRow.reporter_name,
-      incidentType: insertedRow.incident_type as any,
+      incidentType: insertedRow.incident_type as Report['incidentType'],
       location: insertedRow.location,
       latitude: insertedRow.latitude,
       longitude: insertedRow.longitude,

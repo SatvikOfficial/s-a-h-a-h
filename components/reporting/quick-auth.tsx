@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { strings } from '@/lib/strings'
 import type { Language, Member } from '@/lib/types'
+import { toMember } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 
 interface QuickAuthProps {
@@ -97,20 +98,7 @@ export function QuickAuth({ language, onSuccess, onCancel }: QuickAuthProps) {
       return
     }
 
-    const member: Member = {
-      id: memberRow.id,
-      phoneNumber: memberRow.phone ?? memberRow.phoneNumber ?? '',
-      firstName: memberRow.first_name,
-      lastName: memberRow.last_name,
-      state: memberRow.state,
-      district: memberRow.district,
-      city: memberRow.city,
-      memberCode: memberRow.member_code,
-      email: memberRow.email,
-      createdAt: new Date(memberRow.created_at),
-    }
-
-    onSuccess(member)
+    onSuccess(toMember(memberRow))
   }
 
   const handleResend = async () => {
